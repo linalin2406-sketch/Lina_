@@ -1,6 +1,7 @@
 // Логика сайта: загрузка новостей, фильтры, вкладки, тренды.
 
-const state = { region: "", source: "", q: "" };
+// topic: "kids" (детская литература) или "marketing" (маркетинг книг)
+const state = { topic: "kids", source: "", q: "" };
 
 const $ = (sel) => document.querySelector(sel);
 const newsEl = $("#news");
@@ -26,7 +27,7 @@ function regionLabel(r) {
 async function loadNews() {
   statusEl.textContent = "Загрузка…";
   const params = new URLSearchParams();
-  if (state.region) params.set("region", state.region);
+  if (state.topic) params.set("topic", state.topic);
   if (state.source) params.set("source", state.source);
   if (state.q) params.set("q", state.q);
 
@@ -58,7 +59,7 @@ async function loadNews() {
 
 async function loadSources() {
   const params = new URLSearchParams();
-  if (state.region) params.set("region", state.region);
+  if (state.topic) params.set("topic", state.topic);
   const res = await fetch("/api/sources?" + params.toString());
   const sources = await res.json();
   const current = state.source;
@@ -74,7 +75,7 @@ async function loadSources() {
 
 async function loadTrends() {
   const params = new URLSearchParams();
-  if (state.region) params.set("region", state.region);
+  if (state.topic) params.set("topic", state.topic);
   const res = await fetch("/api/trends?" + params.toString());
   const trends = await res.json();
   trendsEl.innerHTML = "";
@@ -113,8 +114,10 @@ document.querySelectorAll(".tab").forEach((tab) => {
   tab.onclick = () => {
     document.querySelectorAll(".tab").forEach((t) => t.classList.remove("active"));
     tab.classList.add("active");
-    state.region = tab.dataset.region;
+    state.topic = tab.dataset.topic;
     state.source = "";
+    state.q = "";
+    $("#search").value = "";
     refreshAll();
   };
 });

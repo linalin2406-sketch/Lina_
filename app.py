@@ -52,10 +52,10 @@ app = FastAPI(title="Книжный портал", lifespan=lifespan)
 
 
 @app.get("/api/news")
-def api_news(region: str = "", source: str = "", q: str = "", limit: int = 60):
-    """Список новостей с фильтрами: регион (ru/int), источник, поиск."""
+def api_news(topic: str = "", source: str = "", q: str = "", limit: int = 60):
+    """Список новостей с фильтрами: тема (kids/marketing), источник, поиск."""
     return database.get_articles(
-        region=region or None,
+        topic=topic or None,
         source=source or None,
         query=q or None,
         limit=min(limit, 200),
@@ -63,15 +63,15 @@ def api_news(region: str = "", source: str = "", q: str = "", limit: int = 60):
 
 
 @app.get("/api/sources")
-def api_sources(region: str = ""):
+def api_sources(topic: str = ""):
     """Список источников для выпадающего фильтра."""
-    return database.get_sources(region=region or None)
+    return database.get_sources(topic=topic or None)
 
 
 @app.get("/api/trends")
-def api_trends(region: str = ""):
-    """Тренды — самые частые слова в свежих заголовках."""
-    return fetcher.compute_trends(region=region or None)
+def api_trends(topic: str = ""):
+    """Тренды — самые частые слова в свежих заголовках выбранной темы."""
+    return fetcher.compute_trends(topic=topic or None)
 
 
 @app.post("/api/refresh")

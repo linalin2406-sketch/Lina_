@@ -4,6 +4,10 @@
 
 База — это один файл books.db, который создаётся автоматически рядом
 с приложением. Никакой отдельной установки СУБД не нужно.
+
+У каждой новости есть:
+  - topic  — тема: 'kids' (детская литература) или 'marketing' (маркетинг книг)
+  - region — 'ru' или 'int' (показывается пометкой на карточке)
 """
 
 import sqlite3
@@ -31,6 +35,7 @@ def init_db():
             summary     TEXT,
             published   TEXT,                      -- дата публикации (ISO-строка)
             source      TEXT,                      -- название источника
+            topic       TEXT,                      -- 'kids' или 'marketing'
             region      TEXT,                      -- 'ru' или 'int'
             fetched_at  TEXT                        -- когда мы её скачали
         )
@@ -49,8 +54,8 @@ def save_article(article):
     cur = conn.execute(
         """
         INSERT OR IGNORE INTO articles
-            (title, link, summary, published, source, region, fetched_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
+            (title, link, summary, published, source, topic, region, fetched_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             article["title"],
@@ -58,6 +63,7 @@ def save_article(article):
             article["summary"],
             article["published"],
             article["source"],
+            article["topic"],
             article["region"],
             article["fetched_at"],
         ),
@@ -68,13 +74,13 @@ def save_article(article):
     return added
 
 
-def get_articles(region=None, source=None, query=None, limit=60):
+def get_articles(topic=None, source=None, query=None, limit=60):
     """Возвращает новости с учётом фильтров, самые свежие — первыми."""
     sql = "SELECT * FROM articles WHERE 1=1"
     params = []
-    if region in ("ru", "int"):
-        sql += " AND region = ?"
-        params.append(region)
+    if topic in ("kids", "marketing"):
+        sql += " AND topic = ?"
+        params.append(topic)
     if source:
         sql += " AND source = ?"
         params.append(source)
@@ -91,13 +97,13 @@ def get_articles(region=None, source=None, query=None, limit=60):
     return [dict(r) for r in rows]
 
 
-def get_sources(region=None):
+def get_sources(topic=None):
     """Список источников (для выпадающего фильтра)."""
     sql = "SELECT DISTINCT source, region FROM articles"
     params = []
-    if region in ("ru", "int"):
-        sql += " WHERE region = ?"
-        params.append(region)
+    if topic in ("kids", "marketing"):
+        sql += " WHERE topic = ?"
+        params.append(topic)
     sql += " ORDER BY source"
     conn = get_connection()
     rows = conn.execute(sql, params).fetchall()
