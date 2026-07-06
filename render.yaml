@@ -1,0 +1,15 @@
+# Конфигурация для хостинга Render.com.
+# Render прочитает этот файл и сам настроит сервис: установит библиотеки
+# и запустит портал. Менять здесь ничего не нужно.
+services:
+  - type: web
+    name: book-portal
+    runtime: python
+    plan: free                      # бесплатный тариф
+    buildCommand: pip install -r requirements.txt
+    startCommand: python app.py
+    envVars:
+      - key: HOST                   # чтобы сайт был доступен из интернета
+        value: 0.0.0.0
+      - key: PYTHON_VERSION
+        value: 3.11.9
